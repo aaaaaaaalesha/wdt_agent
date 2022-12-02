@@ -27,8 +27,8 @@ class ComChoosingFrame(tk.Frame):
     @staticmethod
     def get_ports() -> list:
         ports = list_ports.comports()
-
-        return [f'{port}: {desc}' for port, desc, _ in sorted(ports)]
+        ports.sort()
+        return [f'{port}: {desc}' for port, desc, _ in ports]
 
 
 class WatchDogApp:
