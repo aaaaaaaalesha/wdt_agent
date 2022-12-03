@@ -68,10 +68,11 @@ class TargetedAppsFrame(tk.Frame):
 
         self.entry = tk.Entry(self)
         self.entry.grid(row=1, column=0)
+        self.bind('<KeyRelease>', self.search_entry)
 
         self.listbox = tk.Listbox(self, width=50)
         self.listbox.grid(row=2, column=0, pady=20)
-
+        self.listbox.bind('<<ListboxSelect>>', self.fillout)
         self.process_list = self.get_process_list()
 
     @staticmethod
@@ -86,22 +87,36 @@ class TargetedAppsFrame(tk.Frame):
         processes = []
         for process in psutil.process_iter():
             process_attrs = process.as_dict(attrs=['name', 'exe', 'cmdline'])
-            if process_attrs['exe'] is None or process_attrs['exe'].startswith('C:\\Windows\\System32\\svchost.exe'):
+            is_none_or_empty = any([
+                item is None or not item
+                for item in process_attrs.values()
+            ])
+            if is_none_or_empty or process_attrs['exe'].startswith('C:\\Windows\\System32\\svchost.exe'):
                 continue
             processes.append(process_attrs)
 
         return processes
 
+    def update_listbox(self, process_list: list):
+        self.listbox.delete(0, tk.END)
+        for process in process_list:
+            self.listbox.insert(tk.END, process)
+
+    def fillout(self, event):
+        self.entry.delete(0, tk.END)
+        self.entry.insert(0, self.listbox.get(tk.ANCHOR))
+
     def search_entry(self) -> None:
         typed = self.entry.get()
-        matched_processes = []
         if not typed:
-            matched_processes = self.process_list
-        else:
-            for process in self.process_list:
-                if typed.lower() in process.lower():
-                    matched_processes.append(process)
-        # TODO: update here
+            self.update_listbox(self.process_list)
+            return
+
+        self.update_listbox([
+            process
+            for process in self.process_list
+            if typed.lower() in process.lower()
+        ])
 
 
 class WatchDogApp:
