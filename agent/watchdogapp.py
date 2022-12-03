@@ -1,5 +1,7 @@
 import serial
 import tkinter as tk
+import subprocess
+import psutil
 
 from tkinter.ttk import Combobox
 from serial.tools import list_ports
@@ -8,12 +10,9 @@ from serial.tools import list_ports
 class ComChoosingFrame(tk.Frame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.rowconfigure(index=0,)
-        # self.rowconfigure(index=1)
-        # self.rowconfigure(index=2)
 
         tk.Label(
-            self, text='Подключение к устройству', font=16, justify=tk.CENTER
+            self, text='Подключение к устройству', font=16, justify=tk.CENTER,
         ).grid(row=0, column=0, sticky=tk.N, padx=1, pady=1)
 
         tk.Label(
@@ -44,21 +43,65 @@ class ComChoosingFrame(tk.Frame):
 class TimerConfigFrame(tk.Frame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # tk.Label(
-        #     self, text='Конфигурация таймера', font=16
-        # ).pack()
-        # tk.Label(
-        #     self, text='Время сброса:',
-        # ).pack(anchor=tk.W)
-        #
-        # Combobox(
-        #     self, values=tuple(str(i + 1) for i in range(5)), width=50, state='readonly',
-        # ).pack(anchor=tk.E)
+        tk.Label(
+            self, text='Конфигурация таймера', font=16, justify=tk.CENTER,
+        ).grid(row=0, column=0, sticky=tk.N, padx=1, pady=1)
+
+        tk.Label(
+            self, text='⚙ Время сброса:'
+        ).grid(row=1, column=0, sticky=tk.W, pady=1)
+
+        Combobox(
+            self, values=tuple(str(i + 1) for i in range(5)), state='readonly',
+        ).grid(row=1, column=1, padx=2, pady=1)
+        tk.Label(
+            self, text='мс'
+        ).grid(row=1, column=2, pady=1)
 
 
 class TargetedAppsFrame(tk.Frame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        tk.Label(
+            self, text='🔎 Отслеживаемые процессы', font=16, justify=tk.CENTER,
+        ).grid(row=0, column=0, sticky=tk.N, padx=1, pady=2)
+
+        self.entry = tk.Entry(self)
+        self.entry.grid(row=1, column=0)
+
+        self.listbox = tk.Listbox(self, width=50)
+        self.listbox.grid(row=2, column=0, pady=20)
+
+        self.process_list = self.get_process_list()
+
+    @staticmethod
+    def restart_app(app: str, restart_path: str):
+        # Source: https://stackoverflow.com/questions/52818668/how-to-restart-other-program-in-python
+        # Forced killing, with children, by name.
+        subprocess.call(['taskkill', '/F', '/T', '/IM', app])
+        subprocess.Popen([restart_path, '--fast'])
+
+    @staticmethod
+    def get_process_list():
+        processes = []
+        for process in psutil.process_iter():
+            process_attrs = process.as_dict(attrs=['name', 'exe', 'cmdline'])
+            if process_attrs['exe'] is None or process_attrs['exe'].startswith('C:\\Windows\\System32\\svchost.exe'):
+                continue
+            processes.append(process_attrs)
+
+        return processes
+
+    def search_entry(self) -> None:
+        typed = self.entry.get()
+        matched_processes = []
+        if not typed:
+            matched_processes = self.process_list
+        else:
+            for process in self.process_list:
+                if typed.lower() in process.lower():
+                    matched_processes.append(process)
+        # TODO: update here
 
 
 class WatchDogApp:
@@ -66,30 +109,19 @@ class WatchDogApp:
         self.root = tk.Tk()
         root = self.root
         root.title('USB WatchDog Agent v.1.0.0')
-        root.geometry('600x700')
+        root.geometry('500x600')
         root.resizable(width=False, height=False)
 
-        # ComChoosingFrame(
-        #     root, relief=tk.RAISED, borderwidth=2
-        # ).pack(fill=tk.BOTH, expand=True)
-        #
-        # TimerConfigFrame(
-        #     root, relief=tk.RAISED, borderwidth=1
-        # ).pack(fill=tk.BOTH, expand=True)
-        #
-        # TargetedAppsFrame(
-        #     root, relief=tk.RAISED, borderwidth=1
-        # ).pack(fill=tk.BOTH, expand=True)
         com_choosing_frame = ComChoosingFrame(
-            root, relief=tk.RAISED, borderwidth=2
+            root, borderwidth=2,
         )
 
         timer_config_frame = TimerConfigFrame(
-            root, relief=tk.RAISED, borderwidth=1
+            root, borderwidth=1,
         )
 
         targeted_apps_frame = TargetedAppsFrame(
-            root, relief=tk.RAISED, borderwidth=1
+            root, borderwidth=1,
         )
 
         com_choosing_frame.grid(row=0, column=0)
