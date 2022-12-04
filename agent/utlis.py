@@ -1,20 +1,28 @@
 import subprocess
 import psutil
 
+from serial.tools import list_ports
 from typing import Optional, Dict, Tuple, List
 
 
-def restart_app(app: str, restart_path: str) -> None:
+def get_ports() -> list:
+    """Gets list of available COMs."""
+    ports = list_ports.comports()
+    return [f'{port}: {desc}' for port, desc, _ in sorted(ports)]
+
+
+def restart_app(exe_path: str, cmdline: List[str]) -> Tuple[int, int]:
     """
     Forced kills the process, with children and restarts it again.
     Source:
     https://stackoverflow.com/questions/52818668/how-to-restart-other-program-in-python
-    :param app: path to process to kill
-    :param restart_path: path to restart process
-    :return: None
+    :param exe_path: path to process to kill
+    :param cmdline: cmdline to restart the process
+    :return: tuple of status codes of killing and run commands.
     """
-    subprocess.call(['taskkill', '/F', '/T', '/IM', app])
-    subprocess.Popen([restart_path, '--fast'])
+    kill_process = subprocess.call(['TASKKILL', '/F', '/T', '/IM', exe_path])
+    restart_process = subprocess.Popen(cmdline)
+    return kill_process, restart_process.returncode
 
 
 def get_process_dict() -> Dict[str, Tuple[str, List[str]]]:
