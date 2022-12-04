@@ -1,10 +1,9 @@
-import serial
 import tkinter as tk
-import subprocess
-import psutil
 
 from tkinter.ttk import Combobox
 from serial.tools import list_ports
+
+from agent.utlis import get_process_dict, restart_app
 
 
 class ComChoosingFrame(tk.Frame):
@@ -37,7 +36,8 @@ class ComChoosingFrame(tk.Frame):
     def get_ports() -> list:
         """Gets list of available COMs."""
         ports = list_ports.comports()
-        return ['Не выбрано'] + [f'{port}: {desc}' for port, desc, _ in sorted(ports)]
+        return ['Не выбрано'] + [f'{port}: {desc}' for port, desc, _ in
+                                 sorted(ports)]
 
 
 class TimerConfigFrame(tk.Frame):
@@ -63,59 +63,55 @@ class TargetedAppsFrame(tk.Frame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         tk.Label(
-            self, text='🔎 Отслеживаемые процессы', font=16, justify=tk.CENTER,
+            self, text='Отслеживаемые процессы', font=16, justify=tk.CENTER,
         ).grid(row=0, column=0, sticky=tk.N, padx=1, pady=2)
 
+        tk.Label(
+            self, text='🔎 Введите имя процесса:'
+        ).grid(row=1, column=0, sticky=tk.W)
+
         self.entry = tk.Entry(self)
-        self.entry.grid(row=1, column=0)
-        self.bind('<KeyRelease>', self.search_entry)
+        self.entry.grid(row=1, column=1)
+        self.entry.bind('<KeyRelease>', self.search_entry)
 
         self.listbox = tk.Listbox(self, width=50)
         self.listbox.grid(row=2, column=0, pady=20)
         self.listbox.bind('<<ListboxSelect>>', self.fillout)
-        self.process_list = self.get_process_list()
+        self.processes_dict = get_process_dict()
+        self.update_listbox(self.processes_list)
 
-    @staticmethod
-    def restart_app(app: str, restart_path: str):
-        # Source: https://stackoverflow.com/questions/52818668/how-to-restart-other-program-in-python
-        # Forced killing, with children, by name.
-        subprocess.call(['taskkill', '/F', '/T', '/IM', app])
-        subprocess.Popen([restart_path, '--fast'])
+        tk.Button(
+            self, text='Сканировать', command=self.scan_processes,
+        ).grid(row=2, column=1, padx=2, pady=1)
 
-    @staticmethod
-    def get_process_list():
-        processes = []
-        for process in psutil.process_iter():
-            process_attrs = process.as_dict(attrs=['name', 'exe', 'cmdline'])
-            is_none_or_empty = any([
-                item is None or not item
-                for item in process_attrs.values()
-            ])
-            if is_none_or_empty or process_attrs['exe'].startswith('C:\\Windows\\System32\\svchost.exe'):
-                continue
-            processes.append(process_attrs)
+    @property
+    def processes_list(self):
+        return list(self.processes_dict.keys())
 
-        return processes
-
-    def update_listbox(self, process_list: list):
-        self.listbox.delete(0, tk.END)
-        for process in process_list:
-            self.listbox.insert(tk.END, process)
+    def scan_processes(self):
+        self.processes_dict = get_process_dict()
+        self.update_listbox(self.processes_list)
+        self.entry.delete(0, tk.END)
 
     def fillout(self, event):
         self.entry.delete(0, tk.END)
         self.entry.insert(0, self.listbox.get(tk.ANCHOR))
 
-    def search_entry(self) -> None:
+    def update_listbox(self, process_list: list):
+        self.listbox.delete(0, tk.END)
+        for process_name in process_list:
+            self.listbox.insert(tk.END, process_name)
+
+    def search_entry(self, event) -> None:
         typed = self.entry.get()
         if not typed:
-            self.update_listbox(self.process_list)
+            self.update_listbox(self.processes_list)
             return
 
         self.update_listbox([
-            process
-            for process in self.process_list
-            if typed.lower() in process.lower()
+            process_name
+            for process_name in self.processes_list
+            if typed.lower() in process_name.lower()
         ])
 
 
