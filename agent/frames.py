@@ -1,16 +1,16 @@
 import tkinter as tk
 
+from typing import Optional
+from serial import Serial
 from tkinter.ttk import Combobox
 from tkinter.messagebox import showerror
-
-import serial
 
 from agent.utlis import get_process_dict, restart_app
 from agent.serial_com import get_ports
 
 BACKGROUND = '#D3D3D3'
 
-connected_port = None
+connected_port: Optional[Serial] = None
 
 
 class ComChoosingFrame(tk.Frame):
@@ -84,7 +84,7 @@ class ComChoosingFrame(tk.Frame):
         global connected_port
         try:
             name = chosen.split(':')[0]
-            connected_port = serial.Serial(name, 9600)
+            connected_port = Serial(name, 9600)
         except Exception as err:
             connected_port = None
             self.status.set(f'Статус: {self.NOT_CONNECTED}')

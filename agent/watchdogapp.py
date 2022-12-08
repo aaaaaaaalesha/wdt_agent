@@ -3,8 +3,13 @@ import psutil
 
 from time import sleep
 
-from agent.frames import ComChoosingFrame, TimerConfigFrame, TargetedAppsFrame
 from agent.utlis import run_app
+from agent.frames import (
+    ComChoosingFrame,
+    TimerConfigFrame,
+    TargetedAppsFrame,
+    connected_port
+)
 
 BACKGROUND = '#D3D3D3'
 
@@ -56,3 +61,21 @@ class WatchDogApp:
                     run_app(exe_cmdline[0])
 
             sleep(3)
+
+    def listening(self):
+
+        # TODO: fix it
+        while self.is_running:
+            if connected_port is None:
+                continue
+
+            if not connected_port.is_open:
+                connected_port.open()
+
+            mail = input()
+            connected_port.write(mail + '\r\n')
+
+            sleep(1)
+            while connected_port.inWaiting() > 0:
+                data = connected_port.readline()
+                print(data)
