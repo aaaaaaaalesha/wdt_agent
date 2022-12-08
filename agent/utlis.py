@@ -1,17 +1,10 @@
 import subprocess
 import psutil
 
-from serial.tools import list_ports
 from typing import Optional, Dict, Tuple, List
 
 
-def get_ports() -> list:
-    """Gets list of available COMs."""
-    ports = list_ports.comports()
-    return [f'{port}: {desc}' for port, desc, _ in sorted(ports)]
-
-
-def restart_app(exe_path: str, cmdline: List[str]) -> Tuple[int, int]:
+def restart_app(exe_path: str, cmdline: str) -> Tuple[int, int]:
     """
     Forced kills the process, with children and restarts it again.
     Source:
@@ -25,10 +18,10 @@ def restart_app(exe_path: str, cmdline: List[str]) -> Tuple[int, int]:
     return kill_process, restart_process
 
 
-def run_app(cmdline: List[str]) -> int:
+def run_app(cmdline: str) -> int:
     """
     Runs app by command line.
-    :param cmdline: list of command line.
+    :param cmdline: cmdline to run the process.
     :return: status code.
     """
     return subprocess.Popen(cmdline).returncode

@@ -3,12 +3,21 @@ import tkinter as tk
 from tkinter.ttk import Combobox
 from tkinter.messagebox import showerror
 
-from agent.utlis import get_ports, get_process_dict, restart_app
+import serial
+
+from agent.utlis import get_process_dict, restart_app
+from agent.serial_com import get_ports
 
 BACKGROUND = '#D3D3D3'
 
+connected_port = None
+
 
 class ComChoosingFrame(tk.Frame):
+    NOT_CHOSEN = 'Не выбрано'
+    CONNECTED = 'подключено'
+    NOT_CONNECTED = f'не {CONNECTED}'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -24,12 +33,30 @@ class ComChoosingFrame(tk.Frame):
         self.available_coms = Combobox(
             self, values=self.combobox_values, width=50, state='readonly',
         )
+        self.available_coms.grid(
+            row=2, column=0, sticky=tk.W, padx=2, pady=1
+        )
         self.available_coms.current(0)
-        self.available_coms.grid(row=2, column=0, sticky=tk.W, padx=2, pady=1)
+        self.available_coms.bind('<<ComboboxSelected>>', self.com_selected)
 
         tk.Button(
             self, text='Сканировать', command=self.update_com_ports,
         ).grid(row=2, column=1, padx=2, pady=1)
+
+        self.status = tk.StringVar(value=f'Статус: {self.NOT_CONNECTED}')
+        tk.Label(
+            self, textvariable=self.status, background=BACKGROUND
+        ).grid(row=3, column=0, padx=2, pady=1, sticky=tk.E)
+
+        self.connect_btn = tk.Button(
+            self, text='Подключиться', command=self.connect, state='disabled',
+        )
+        self.connect_btn.grid(row=3, column=1, padx=2, pady=3)
+
+        self.disconnect_btn = tk.Button(
+            self, text='Отключиться', command=self.disconnect, state='disabled',
+        )
+        self.disconnect_btn.grid(row=4, column=1, padx=2, pady=3)
 
     def update_com_ports(self) -> None:
         """Updates list of available COMs in combobox."""
@@ -37,7 +64,48 @@ class ComChoosingFrame(tk.Frame):
 
     @property
     def combobox_values(self):
-        return ['Не выбрано'] + get_ports()
+        return [self.NOT_CHOSEN] + get_ports()
+
+    def com_selected(self, event):
+        if self.available_coms.get() != self.NOT_CHOSEN:
+            self.connect_btn.config(state='normal')
+            return
+
+        self.connect_btn.config(state='disabled')
+
+    def connect(self):
+        chosen = self.available_coms.get()
+        if chosen == self.NOT_CHOSEN:
+            showerror(
+                title='Упс!', message='Вы не выбрали подходящий COM.'
+            )
+            return
+
+        global connected_port
+        try:
+            name = chosen.split(':')[0]
+            connected_port = serial.Serial(name, 9600)
+        except Exception as err:
+            connected_port = None
+            self.status.set(f'Статус: {self.NOT_CONNECTED}')
+            showerror('Критическая ошибка!', str(err))
+            return
+
+        self.status.set(f'Статус: {self.CONNECTED}')
+        self.disconnect_btn.config(state='normal')
+
+    def disconnect(self):
+        global connected_port
+
+        try:
+            connected_port.close()
+            connected_port = None
+            self.status.set(f'Статус: {self.NOT_CONNECTED}')
+            self.disconnect_btn.config(state='disabled')
+        except Exception as err:
+            self.status.set(f'Статус: {self.NOT_CONNECTED}')
+            showerror('Критическая ошибка!', str(err))
+            return
 
 
 class TimerConfigFrame(tk.Frame):
@@ -95,7 +163,7 @@ class TargetedAppsFrame(tk.Frame):
         self.listbox_processes = tk.Listbox(self, width=50, relief=tk.RAISED)
         self.listbox_processes.grid(columnspan=2, row=3, column=0,
                                     padx=5, pady=3)
-        self.listbox_processes.bind('<<ListboxSelect>>', self.fillout)
+        self.listbox_processes.bind('<<ListboxSelect>>', self.fill_out)
 
         self.processes_dict = get_process_dict()
         self.update_listbox(self.processes_list)
@@ -139,7 +207,7 @@ class TargetedAppsFrame(tk.Frame):
         self.update_listbox(self.processes_list)
         self.entry.delete(0, tk.END)
 
-    def fillout(self, event):
+    def fill_out(self, event):
         self.entry.delete(0, tk.END)
         self.entry.insert(0, self.listbox_processes.get(tk.ANCHOR))
         self.add_target_btn.config(state='normal')
@@ -209,7 +277,3 @@ class TargetedAppsFrame(tk.Frame):
             return
 
         self.remove_target()
-
-
-
-
