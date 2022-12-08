@@ -4,7 +4,7 @@ import psutil
 from time import sleep
 
 from agent.frames import ComChoosingFrame, TimerConfigFrame, TargetedAppsFrame
-from agent.utlis import restart_app
+from agent.utlis import run_app
 
 BACKGROUND = '#D3D3D3'
 
@@ -46,14 +46,13 @@ class WatchDogApp:
 
     def check_targets(self):
         while self.is_running:
-            current_processes = [process for process in psutil.process_iter()]
+            running_proc_names = {
+                process.name()
+                for process in psutil.process_iter()
+            }
             target_processes = self.targeted_apps_frame.target_processes
             for name_process, exe_cmdline in target_processes.items():
-                for process in current_processes:
-                    if process.name() != name_process:
-                        continue
+                if name_process not in running_proc_names:
+                    run_app(exe_cmdline[0])
 
-                    if not process.is_running():
-                        restart_app(exe_cmdline[0], exe_cmdline[1])
-
-            sleep(5)
+            sleep(3)

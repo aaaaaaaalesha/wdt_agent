@@ -21,8 +21,17 @@ def restart_app(exe_path: str, cmdline: List[str]) -> Tuple[int, int]:
     :return: tuple of status codes of killing and run commands.
     """
     kill_process = subprocess.call(['TASKKILL', '/F', '/T', '/IM', exe_path])
-    restart_process = subprocess.Popen(cmdline)
-    return kill_process, restart_process.returncode
+    restart_process = run_app(cmdline)
+    return kill_process, restart_process
+
+
+def run_app(cmdline: List[str]) -> int:
+    """
+    Runs app by command line.
+    :param cmdline: list of command line.
+    :return: status code.
+    """
+    return subprocess.Popen(cmdline).returncode
 
 
 def get_process_dict() -> Dict[str, Tuple[str, List[str]]]:
