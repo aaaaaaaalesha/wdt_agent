@@ -129,3 +129,23 @@ dmypy.json
 .pyre/
 
 .idea
+!/pic_wdt/watchdog.bmk
+
+!/pic_wdt/watchdog.brk
+
+!/pic_wdt/watchdog.cfg
+
+!/pic_wdt/watchdog.dbg
+
+!/pic_wdt/watchdog.dct
+
+!/pic_wdt/watchdog.dlt
+!/pic_wdt/watchdog.log
+
+!/pic_wdt/watchdog.lst
+
+!/pic_wdt/watchdog.mcppi
+
+!/pic_wdt/watchdog.user.dic
+
+!/pic_wdt/watchdog_callertable.txt
