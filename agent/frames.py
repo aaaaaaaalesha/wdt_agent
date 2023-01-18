@@ -10,8 +10,6 @@ from agent.serial_com import get_ports
 
 BACKGROUND = '#D3D3D3'
 
-connected_port: Optional[Serial] = None
-
 
 class ComChoosingFrame(tk.Frame):
     NOT_CHOSEN = 'Не выбрано'
@@ -20,6 +18,7 @@ class ComChoosingFrame(tk.Frame):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.connected_port: Optional[Serial] = None
 
         tk.Label(
             self, text='Подключение к устройству', font=20,
@@ -54,7 +53,8 @@ class ComChoosingFrame(tk.Frame):
         self.connect_btn.grid(row=3, column=1, padx=2, pady=3)
 
         self.disconnect_btn = tk.Button(
-            self, text='Отключиться', command=self.disconnect, state='disabled',
+            self, text='Отключиться', command=self.disconnect,
+            state='disabled',
         )
         self.disconnect_btn.grid(row=4, column=1, padx=2, pady=3)
 
@@ -81,12 +81,12 @@ class ComChoosingFrame(tk.Frame):
             )
             return
 
-        global connected_port
         try:
             name = chosen.split(':')[0]
-            connected_port = Serial(name, 9600)
+            self.connected_port = Serial(name, 9600)
+            print(f'Connected successfully {self.connected_port}')
         except Exception as err:
-            connected_port = None
+            self.connected_port = None
             self.status.set(f'Статус: {self.NOT_CONNECTED}')
             showerror('Критическая ошибка!', str(err))
             return
@@ -95,11 +95,9 @@ class ComChoosingFrame(tk.Frame):
         self.disconnect_btn.config(state='normal')
 
     def disconnect(self):
-        global connected_port
-
         try:
-            connected_port.close()
-            connected_port = None
+            self.connected_port.close()
+            self.connected_port = None
             self.status.set(f'Статус: {self.NOT_CONNECTED}')
             self.disconnect_btn.config(state='disabled')
         except Exception as err:

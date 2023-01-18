@@ -3,12 +3,11 @@ import psutil
 
 from time import sleep
 
-from agent.utlis import run_app
+from agent.utlis import restart_app
 from agent.frames import (
     ComChoosingFrame,
     TimerConfigFrame,
     TargetedAppsFrame,
-    connected_port
 )
 
 BACKGROUND = '#D3D3D3'
@@ -51,31 +50,22 @@ class WatchDogApp:
 
     def check_targets(self):
         while self.is_running:
-            running_proc_names = {
-                process.name()
-                for process in psutil.process_iter()
-            }
+            current_processes = [process for process in psutil.process_iter()]
             target_processes = self.targeted_apps_frame.target_processes
             for name_process, exe_cmdline in target_processes.items():
-                if name_process not in running_proc_names:
-                    run_app(exe_cmdline[0])
+                for process in current_processes:
+                    if process.name() != name_process:
+                        continue
 
-            sleep(3)
+                    if not process.is_running():
+                        restart_app(exe_cmdline[0], exe_cmdline[1])
 
-    def listening(self):
+            sleep(5)
 
-        # TODO: fix it
+    def heartbeating(self):
         while self.is_running:
-            if connected_port is None:
+            if self.com_choosing_frame.connected_port is None:
                 continue
 
-            if not connected_port.is_open:
-                connected_port.open()
-
-            mail = input()
-            connected_port.write(mail + '\r\n')
-
+            self.com_choosing_frame.connected_port.write(1)
             sleep(1)
-            while connected_port.inWaiting() > 0:
-                data = connected_port.readline()
-                print(data)
