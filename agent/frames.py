@@ -58,6 +58,27 @@ class ComChoosingFrame(tk.Frame):
         )
         self.disconnect_btn.grid(row=4, column=1, padx=2, pady=3)
 
+        # CONFIGURATION SECTION
+        tk.Label(
+            self, text='Конфигурация таймера', font=20, background=BACKGROUND
+        ).grid(row=5, column=0, padx=1, pady=1, sticky=tk.W)
+        tk.Label(
+            self, text='Время сброса:', background=BACKGROUND
+        ).grid(row=6, column=0, sticky=tk.W, pady=1)
+        self.configured_time = Combobox(
+            self, values=tuple(f'{i} секунд' for i in range(10, 100, 5)),
+            width=50, state='readonly',
+        )
+        self.configured_time.grid(row=7, column=0, padx=2, pady=1)
+
+        self.configured_time.bind('<<ComboboxSelected>>', self.config_selected)
+
+        self.config_button = tk.Button(
+            self, text='Конфигурировать', command=self.configure_timer,
+            state='disabled'
+        )
+        self.config_button.grid(row=7, column=1, padx=2, pady=3)
+
     def update_com_ports(self) -> None:
         """Updates list of available COMs in combobox."""
         self.available_coms.configure(values=self.combobox_values)
@@ -72,6 +93,9 @@ class ComChoosingFrame(tk.Frame):
             return
 
         self.connect_btn.config(state='disabled')
+
+    def config_selected(self, event):
+        self.config_button.config(state='normal')
 
     def connect(self):
         chosen = self.available_coms.get()
@@ -105,24 +129,31 @@ class ComChoosingFrame(tk.Frame):
             showerror('Критическая ошибка!', str(err))
             return
 
+    def s_to_b(self, s):
+        if s == '1':
+            return b'1'
+        if s == '2':
+            return b'2'
+        if s == '3':
+            return b'3'
+        if s == '5':
+            return b'5'
 
-class TimerConfigFrame(tk.Frame):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        tk.Label(
-            self, text='Конфигурация таймера', font=20, background=BACKGROUND
-        ).grid(columnspan=3, row=0, column=0, padx=1, pady=1, sticky=tk.W)
+    def configure_timer(self):
+        if self.connected_port is None:
+            showerror(
+                'Ошибка!',
+                'Вы не подключились к WDT. '
+                'Выберите подходящий COM-порт и нажмите "Подключиться".'
+            )
+            return
 
-        tk.Label(
-            self, text='Время сброса:', background=BACKGROUND
-        ).grid(row=1, column=0, sticky=tk.W, pady=1)
+        chosen = self.configured_time.get()
+        s1, s2 = list(chosen)[:2]
+        s1, s2 = self.s_to_b(s1), self.s_to_b(s2)
+        self.connected_port.write(s1)
 
-        Combobox(
-            self, values=tuple(str(i + 1) for i in range(5)), state='readonly',
-        ).grid(row=1, column=1, padx=2, pady=1)
-        tk.Label(
-            self, text='мс', background=BACKGROUND
-        ).grid(row=1, column=2, pady=1)
+        self.connected_port.write(s2)
 
 
 class TargetedAppsFrame(tk.Frame):

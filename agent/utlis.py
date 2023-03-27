@@ -14,7 +14,7 @@ def restart_app(exe_path: str, cmdline: str) -> Tuple[int, int]:
     :return: tuple of status codes of killing and run commands.
     """
     kill_process = subprocess.call(['TASKKILL', '/F', '/T', '/IM', exe_path])
-    restart_process = run_app(cmdline)
+    restart_process = run_app(exe_path)
     return kill_process, restart_process
 
 

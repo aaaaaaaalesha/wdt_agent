@@ -1,0 +1,408 @@
+CCS PCH C Compiler, Version 5.112d, 1               27-ÿíâ-23 16:29
+Compiler operating in Evaluation Mode
+To obtain a fully enabled compiler visit www.ccsinfo.com/products
+
+               Filename:   D:\GitHub\wdt_agent\pic_wdt\ccs\main.lst
+
+               ROM used:   546 bytes (1%)
+                           Largest free fragment is 64990
+               RAM used:   12 (0%) at main() level
+                           15 (0%) worst case
+               Stack used: 0 locations
+               Stack size: 31
+
+*
+00000:  GOTO   01A0
+.................... #include <main.h>
+.................... #include <18F46K22.h>
+.................... //////////// Standard Header file for the PIC18F46K22 device ////////////////
+.................... ///////////////////////////////////////////////////////////////////////////
+.................... ////        (C) Copyright 1996, 2020 Custom Computer Services          ////
+.................... //// This source code may only be used by licensed users of the CCS C  ////
+.................... //// compiler.  This source code may only be distributed to other      ////
+.................... //// licensed users of the CCS C compiler.  No other use, reproduction ////
+.................... //// or distribution is permitted without written permission.          ////
+.................... //// Derivative programs created using this software in object code    ////
+.................... //// form are not restricted in any way.                               ////
+.................... ///////////////////////////////////////////////////////////////////////////
+.................... #device PIC18F46K22
+00004:  DATA CE,F8
+00006:  DATA E8,E1
+00008:  DATA EA,E0
+0000A:  DATA 21,00
+*
+000C4:  TBLRD*+
+000C6:  MOVF   FF5,F
+000C8:  BZ    00E4
+000CA:  MOVFF  FF6,0C
+000CE:  MOVFF  FF7,0D
+000D2:  MOVF   FF5,W
+000D4:  BTFSS  F9E.4
+000D6:  BRA    00D4
+000D8:  MOVWF  FAD
+000DA:  MOVFF  0C,FF6
+000DE:  MOVFF  0D,FF7
+000E2:  BRA    00C4
+000E4:  GOTO   0136 (RETURN)
+.................... 
+.................... #list
+.................... 
+.................... #device ADC=10
+.................... 
+.................... #FUSES NOWDT //No Watch Dog Timer
+.................... #use delay(crystal=8MHz,restart_wdt)
+*
+00154:  CLRF   FEA
+00156:  MOVLW  0C
+00158:  MOVWF  FE9
+0015A:  MOVF   FEF,W
+0015C:  BZ    0180
+0015E:  MOVLW  02
+00160:  MOVWF  01
+00162:  MOVLW  BF
+00164:  MOVWF  00
+00166:  CLRWDT
+00168:  DECFSZ 00,F
+0016A:  BRA    0166
+0016C:  DECFSZ 01,F
+0016E:  BRA    0162
+00170:  MOVLW  96
+00172:  MOVWF  00
+00174:  DECFSZ 00,F
+00176:  BRA    0174
+00178:  BRA    017A
+0017A:  CLRWDT
+0017C:  DECFSZ FEF,F
+0017E:  BRA    015E
+00180:  RETURN 0
+.................... #use FIXED_IO(D_outputs=PIN_D0)
+.................... 
+.................... #use rs232(baud=9600, xmit=PIN_C6, rcv=PIN_C7, bits=8, parity=N)
+*
+0006E:  BTFSS  F9E.4
+00070:  BRA    006E
+00072:  MOVWF  FAD
+00074:  RETURN 0
+.................... 
+.................... #include <ctype.h>
+.................... ////////////////////////////////////////////////////////////////////////////
+.................... ////        (C) Copyright 1996,2003 Custom Computer Services            ////
+.................... //// This source code may only be used by licensed users of the CCS C   ////
+.................... //// compiler.  This source code may only be distributed to other       ////
+.................... //// licensed users of the CCS C compiler.  No other use, reproduction  ////
+.................... //// or distribution is permitted without written permission.           ////
+.................... //// Derivative programs created using this software in object code     ////
+.................... //// form are not restricted in any way.                                ////
+.................... ////////////////////////////////////////////////////////////////////////////
+.................... 
+.................... #ifndef _CTYPE
+.................... #define _CTYPE
+.................... 
+.................... #define islower(x)  isamong(x,"abcdefghijklmnopqrstuvwxyz")
+.................... #define isupper(x)  isamong(x,"ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+.................... #define isalnum(x)  isamong(x,"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+.................... #define isalpha(x)  isamong(x,"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+.................... #define isdigit(x)  isamong(x,"0123456789")
+.................... #define isspace(x)  ((x)==' ')
+.................... #define isxdigit(x) isamong(x,"0123456789ABCDEFabcdef")
+.................... #define iscntrl(x)  ((x)<' ')
+.................... #define isprint(x)  ((x)>=' ')
+.................... #define isgraph(x)  ((x)>' ')
+.................... #define ispunct(x)  (((x)>' ')&&!isalnum(x))
+.................... 
+.................... #endif
+.................... 
+.................... 
+.................... 
+.................... const char HEARTBEAT = 'h';
+.................... int timeout_error = 0;
+.................... 
+.................... char recieved = 0;
+.................... char second = 0;
+.................... unsigned int wdt_counter = 0;
+.................... unsigned int critical_time = 5; // 3 seconds by default
+.................... 
+.................... char timed_getc() {
+....................     long timeout;
+....................     timeout_error=FALSE;
+*
+0000C:  CLRF   04
+....................     timeout = 0;
+0000E:  CLRF   0D
+00010:  CLRF   0C
+....................     while (!kbhit() && (++timeout < 50000)) // 1/2 second
+00012:  BTFSC  F9E.5
+00014:  GOTO   0046
+00018:  INCF   0C,F
+0001A:  BTFSC  FD8.2
+0001C:  INCF   0D,F
+0001E:  MOVF   0D,W
+00020:  SUBLW  C3
+00022:  BTFSS  FD8.0
+00024:  GOTO   0046
+00028:  BTFSS  FD8.2
+0002A:  GOTO   0038
+0002E:  MOVF   0C,W
+00030:  SUBLW  4F
+00032:  BTFSS  FD8.0
+00034:  GOTO   0046
+....................       delay_us(10);
+00038:  CLRWDT
+0003A:  MOVLW  06
+0003C:  MOVWF  00
+0003E:  DECFSZ 00,F
+00040:  BRA    003E
+00042:  GOTO   0012
+....................    if (kbhit()) {
+00046:  BTFSS  F9E.5
+00048:  GOTO   005E
+....................      return (getc());
+0004C:  BTFSS  F9E.5
+0004E:  GOTO   004C
+00052:  MOVFF  FAE,01
+00056:  GOTO   006A
+....................    } else {
+0005A:  GOTO   006A
+....................      timeout_error=TRUE;
+0005E:  MOVLW  01
+00060:  MOVWF  04
+....................      return (0);
+00062:  MOVLW  00
+00064:  MOVWF  01
+00066:  GOTO   006A
+....................  }
+0006A:  GOTO   00EC (RETURN)
+.................... }
+.................... 
+.................... unsigned int try_cast_integer(char first, char second) {
+....................     if (isdigit((unsigned char)first) == 0) return -1;
+*
+00076:  MOVF   0C,W
+00078:  SUBLW  2F
+0007A:  BC    0082
+0007C:  MOVF   0C,W
+0007E:  SUBLW  39
+00080:  BC    0086
+00082:  MOVLW  00
+00084:  BRA    0088
+00086:  MOVLW  01
+00088:  XORLW  00
+0008A:  BNZ   0092
+0008C:  MOVLW  FF
+0008E:  MOVWF  01
+00090:  BRA    00C0
+....................     if (isdigit((unsigned char)second) == 0) return -1;
+00092:  MOVF   0D,W
+00094:  SUBLW  2F
+00096:  BC    009E
+00098:  MOVF   0D,W
+0009A:  SUBLW  39
+0009C:  BC    00A2
+0009E:  MOVLW  00
+000A0:  BRA    00A4
+000A2:  MOVLW  01
+000A4:  XORLW  00
+000A6:  BNZ   00AE
+000A8:  MOVLW  FF
+000AA:  MOVWF  01
+000AC:  BRA    00C0
+....................     
+....................     return (first - '0') * 10 + (second - '0');
+000AE:  MOVLW  30
+000B0:  SUBWF  0C,W
+000B2:  MULLW  0A
+000B4:  MOVFF  FF3,0E
+000B8:  MOVLW  30
+000BA:  SUBWF  0D,W
+000BC:  ADDWF  0E,W
+000BE:  MOVWF  01
+000C0:  GOTO   0122 (RETURN)
+.................... }
+.................... 
+.................... // Handles heartbeats and configuration from wdt_agent.
+.................... void UART_handler() {
+*
+000E8:  CLRF   0B
+....................       unsigned int time = 0;
+....................       recieved = timed_getc();
+000EA:  BRA    000C
+000EC:  MOVFF  01,05
+....................       if (timeout_error == TRUE) {
+000F0:  DECFSZ 04,W
+000F2:  BRA    00F6
+....................        return;
+000F4:  BRA    0150
+....................       }
+....................       putc(recieved);
+000F6:  MOVF   05,W
+000F8:  RCALL  006E
+....................       if (recieved != HEARTBEAT) {
+000FA:  MOVF   05,W
+000FC:  SUBLW  68
+000FE:  BZ    014E
+....................          second = getc();
+00100:  BTFSS  F9E.5
+00102:  BRA    0100
+00104:  MOVFF  FAE,06
+....................          putc(' ');
+00108:  MOVLW  20
+0010A:  RCALL  006E
+....................          putc(recieved);
+0010C:  MOVF   05,W
+0010E:  RCALL  006E
+....................          putc(second);
+00110:  MOVF   06,W
+00112:  RCALL  006E
+....................          putc(' ');
+00114:  MOVLW  20
+00116:  RCALL  006E
+....................          
+....................          time = try_cast_integer(recieved, second);
+00118:  MOVFF  05,0C
+0011C:  MOVFF  06,0D
+00120:  BRA    0076
+00122:  MOVFF  01,0B
+....................          if (time == -1) {
+00126:  MOVF   0B,W
+00128:  SUBLW  FF
+0012A:  BNZ   0148
+....................            puts("Îøèáêà!");
+0012C:  MOVLW  04
+0012E:  MOVWF  FF6
+00130:  MOVLW  00
+00132:  MOVWF  FF7
+00134:  BRA    00C4
+00136:  MOVLW  0D
+00138:  BTFSS  F9E.4
+0013A:  BRA    0138
+0013C:  MOVWF  FAD
+0013E:  MOVLW  0A
+00140:  BTFSS  F9E.4
+00142:  BRA    0140
+00144:  MOVWF  FAD
+....................            return;
+00146:  BRA    0150
+....................          }
+....................          // Configure critical time from agent.
+....................          critical_time = time;
+00148:  MOVFF  0B,08
+....................          return;
+0014C:  BRA    0150
+....................       }
+....................       // If heartbeat has been recieved, update wdt.
+....................       wdt_counter = 0;
+0014E:  CLRF   07
+00150:  GOTO   01EA (RETURN)
+.................... }
+.................... 
+.................... // Activates relay and restarts the system.
+.................... void reset() {
+....................     output_high(PIN_D0);
+*
+00182:  MOVLW  FE
+00184:  MOVWF  F95
+00186:  BSF    F8C.0
+....................     delay_ms(600);
+00188:  MOVLW  03
+0018A:  MOVWF  0B
+0018C:  MOVLW  C8
+0018E:  MOVWF  0C
+00190:  RCALL  0154
+00192:  DECFSZ 0B,F
+00194:  BRA    018C
+....................     output_low(PIN_D0);
+00196:  MOVLW  FE
+00198:  MOVWF  F95
+0019A:  BCF    F8C.0
+0019C:  GOTO   020A (RETURN)
+.................... }
+.................... 
+.................... void main() {
+001A0:  CLRF   FF8
+001A2:  BCF    FD0.7
+001A4:  BCF    FB8.3
+001A6:  MOVLW  0C
+001A8:  MOVWF  FAF
+001AA:  MOVLW  A2
+001AC:  MOVWF  FAC
+001AE:  MOVLW  90
+001B0:  MOVWF  FAB
+001B2:  CLRF   04
+001B4:  CLRF   05
+001B6:  CLRF   06
+001B8:  CLRF   07
+001BA:  MOVLW  05
+001BC:  MOVWF  08
+001BE:  CLRF   0A
+001C0:  CLRF   09
+001C2:  MOVLB  F
+001C4:  CLRF   x38
+001C6:  CLRF   x39
+001C8:  CLRF   x3A
+001CA:  CLRF   x3B
+001CC:  CLRF   x3C
+001CE:  CLRF   F77
+001D0:  CLRF   F78
+001D2:  CLRF   F79
+....................    output_low(PIN_D0);
+001D4:  MOVLW  FE
+001D6:  MOVWF  F95
+001D8:  BCF    F8C.0
+....................    // Initial heartbeat for starting process.
+....................    for (getc(); TRUE; ++wdt_counter) {
+001DA:  BTFSS  F9E.5
+001DC:  BRA    01DA
+001DE:  MOVF   FAE,W
+....................      if (input(PIN_C7)) {
+001E0:  BSF    F94.7
+001E2:  BTFSS  F82.7
+001E4:  BRA    01EC
+....................        UART_handler();
+001E6:  MOVLB  0
+001E8:  BRA    00E8
+001EA:  MOVLB  F
+....................      }
+....................      delay_ms(750);
+001EC:  MOVLW  03
+001EE:  MOVWF  0B
+001F0:  MOVLW  FA
+001F2:  MOVWF  0C
+001F4:  MOVLB  0
+001F6:  RCALL  0154
+001F8:  DECFSZ 0B,F
+001FA:  BRA    01FE
+001FC:  BRA    0202
+001FE:  MOVLB  F
+00200:  BRA    01F0
+....................      if (wdt_counter > critical_time) {
+00202:  MOVF   07,W
+00204:  SUBWF  08,W
+00206:  BC    021A
+....................        reset();
+00208:  BRA    0182
+....................        wdt_counter = 0;
+0020A:  CLRF   07
+....................        delay_ms(60000); // wait a minute, system restarts...
+0020C:  MOVLW  F0
+0020E:  MOVWF  0B
+00210:  MOVLW  FA
+00212:  MOVWF  0C
+00214:  RCALL  0154
+00216:  DECFSZ 0B,F
+00218:  BRA    0210
+....................      }
+0021A:  INCF   07,F
+0021C:  MOVLB  F
+0021E:  BRA    01E0
+....................    }
+.................... }
+00220:  SLEEP 
+
+Configuration Fuses:
+   Word  1: E300   HSM NOPLLEN PRIMARY_ON FCMEN IESO
+   Word  2: 3C1E   PUT BROWNOUT BORV19 NOWDT WDT32768
+   Word  3: BF00   CCP2C1 PBADEN CCP3B5 HFOFST TIMER3C0 CCP2D2 MCLR
+   Word  4: 0081   STVREN NOLVP NOXINST NODEBUG
+   Word  5: C00F   NOPROTECT NOCPB NOCPD
+   Word  6: E00F   NOWRT NOWRTC NOWRTB NOWRTD
+   Word  7: 400F   NOEBTR NOEBTRB

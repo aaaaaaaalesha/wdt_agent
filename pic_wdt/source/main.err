@@ -1,0 +1,5 @@
+Compiling D:\GitHub\wdt_agent\pic_wdt\ccs\main on 27-џэт-23 at 16:29
+>>> Warning 203 "D:\GitHub\wdt_agent\pic_wdt\ccs\main.c" Line 71(1,1): Condition always TRUE
+      Memory usage:   ROM=1%      RAM=0% - 0%
+      0 Errors,  1 Warnings.
+Build Successful.

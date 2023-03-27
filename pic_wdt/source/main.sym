@@ -1,0 +1,99 @@
+000     @SCRATCH
+001     @SCRATCH
+001     _RETURN_
+002     @SCRATCH
+003     @SCRATCH
+004     timeout_error
+005     recieved
+006     second
+007     wdt_counter
+008     critical_time
+009-00A @sprintf_string
+00B     UART_handler.time
+00B     reset.@SCRATCH1
+00B     MAIN.@SCRATCH1
+00C-00D timed_getc.timeout
+00C     try_cast_integer.first
+00C     @delay_ms1.P1
+00C     @PSTRINGC_1.@SCRATCH1
+00D     try_cast_integer.second
+00D     @PSTRINGC_1.@SCRATCH2
+00E     try_cast_integer.@SCRATCH1
+F55     CCP_5
+F55     CCP_5_LOW
+F56     CCP_5_HIGH
+F58     CCP_4_LOW
+F58     CCP_4
+F59     CCP_4_HIGH
+F5E     CCP_3
+F5E     CCP_3_LOW
+F5F     CCP_3_HIGH
+F67     CCP_2_LOW
+F67     CCP_2
+F68     CCP_2_HIGH
+F78.6   C2OUT
+F79.6   C1OUT
+FBE     CCP_1_LOW
+FBE     CCP_1
+FBF     CCP_1_HIGH
+FE1-FE2 @READ_PACKED_MEMORY.P1
+FE1-FE2 @WRITE_PACKED_MEMORY.P2
+FE9-FEA @WRITE_PACKED_MEMORY.P1
+FE9-FEA @READ_PACKED_MEMORY.P2
+FE9-FEA @READ_PROGRAM_MEMORY.P3
+FE9-FEA @WRITE_PROGRAM_MEMORY.P4
+FF6-FF8 @WRITE_PROGRAM_MEMORY.P1
+FF6-FF8 @READ_PROGRAM_MEMORY.P2
+
+ROM Allocation:
+000004  @const817.call
+00000C  timed_getc
+00006E  @PUTCHARI_BIU_1
+000076  try_cast_integer
+0000C4  @PSTRINGC_1
+0000E8  UART_handler
+000154  @delay_ms1
+000182  reset
+0001A0  MAIN
+0001A0  @cinit1
+0001D4  @cinit2
+
+Project Directory:
+    D:\GitHub\wdt_agent\pic_wdt\ccs\
+
+Project Files:
+    main.c                                                  [27-янв-23 16:29  CRC=3E5A6DC2]
+    main.h                                                  [27-янв-23 16:02  CRC=D872A938]
+    C:\Program Files (x86)\PICCDEMO\Devices\18F46K22.h      [23-окт-22 12:02  CRC=184C3C86]
+    C:\Program Files (x86)\PICCDEMO\Drivers\ctype.h         [03-янв-08 15:55  CRC=2D1F019F]
+
+Source signature=895756BE
+Program memory checksum=0000
+Hex file CRC=E95F
+
+Units:
+    D:\GitHub\wdt_agent\pic_wdt\ccs\main (main)
+
+Compiler Settings:
+    Processor:      PIC18F46K22
+    Pointer Size:   16
+    ADC Range:      0-1023
+    Opt Level:      9
+    Short,Int,Long: UNSIGNED: 1,8,16
+    Float,Double:   32,32
+    Compile Mode:   CCS5
+
+Compiler operating in Evaluation Mode
+To obtain a fully enabled compiler visit www.ccsinfo.com/products
+
+Output Files:
+    XREF file:   main.xsym
+    Errors:      main.err
+    Ext Symbols: main.esym
+    INHX32:      main.hex
+    Symbols:     main.sym
+    List:        main.lst
+    Debug/COFF:  main.cof
+    Project:     main.ccspjt
+    Call Tree:   main.tre
+    Statistics:  main.STA

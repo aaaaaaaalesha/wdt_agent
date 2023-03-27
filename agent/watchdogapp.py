@@ -3,10 +3,9 @@ import psutil
 
 from time import sleep
 
-from agent.utlis import restart_app
+from agent.utlis import restart_app, run_app
 from agent.frames import (
     ComChoosingFrame,
-    TimerConfigFrame,
     TargetedAppsFrame,
 )
 
@@ -28,17 +27,12 @@ class WatchDogApp:
             root, borderwidth=5, background=BACKGROUND, border=1
         )
 
-        self.timer_config_frame = TimerConfigFrame(
-            root, borderwidth=5, background=BACKGROUND, border=1
-        )
-
         self.targeted_apps_frame = TargetedAppsFrame(
             root, borderwidth=5, background=BACKGROUND, border=1
         )
 
         self.com_choosing_frame.grid(row=0, sticky='WE')
-        self.timer_config_frame.grid(row=1, sticky='WE')
-        self.targeted_apps_frame.grid(row=2, sticky='WE')
+        self.targeted_apps_frame.grid(row=1, sticky='WE')
 
     def run(self):
         self.is_running = True
@@ -50,22 +44,21 @@ class WatchDogApp:
 
     def check_targets(self):
         while self.is_running:
-            current_processes = [process for process in psutil.process_iter()]
+            running_proc_names = {
+                process.name()
+                for process in psutil.process_iter()
+            }
             target_processes = self.targeted_apps_frame.target_processes
             for name_process, exe_cmdline in target_processes.items():
-                for process in current_processes:
-                    if process.name() != name_process:
-                        continue
+                if name_process not in running_proc_names:
+                    run_app(exe_cmdline[0])
 
-                    if not process.is_running():
-                        restart_app(exe_cmdline[0], exe_cmdline[1])
-
-            sleep(5)
+            sleep(3)
 
     def heartbeating(self):
         while self.is_running:
             if self.com_choosing_frame.connected_port is None:
                 continue
 
-            self.com_choosing_frame.connected_port.write(1)
-            sleep(1)
+            self.com_choosing_frame.connected_port.write(b'h')
+            sleep(2)
