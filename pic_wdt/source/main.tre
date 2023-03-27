@@ -1,0 +1,17 @@
+ÀÄmain
+   ÀÄMAIN  0/130  Ram=1
+      ÃÄ@cinit1  (Inline)  Ram=0
+      ÃÄ@cinit2  (Inline)  Ram=0
+      ÃÄUART_handler  0/108  Ram=1
+      ³  ÃÄtimed_getc  0/98  Ram=2
+      ³  ÃÄ@PUTCHARI_BIU_1  0/8  Ram=0
+      ³  ÃÄ@PUTCHARI_BIU_1  0/8  Ram=0
+      ³  ÃÄ@PUTCHARI_BIU_1  0/8  Ram=0
+      ³  ÃÄ@PUTCHARI_BIU_1  0/8  Ram=0
+      ³  ÃÄ@PUTCHARI_BIU_1  0/8  Ram=0
+      ³  ÃÄtry_cast_integer  0/78  Ram=3
+      ³  ÀÄ@PSTRINGC_1  0/36  Ram=2
+      ÃÄ@delay_ms1  0/46  Ram=1
+      ÃÄreset  0/30  Ram=1
+      ³  ÀÄ@delay_ms1  0/46  Ram=1
+      ÀÄ@delay_ms1  0/46  Ram=1

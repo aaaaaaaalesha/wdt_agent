@@ -1,0 +1,73 @@
+[PROJECT]
+Target=main.hex
+Processor_Text=PIC18F46K22
+CCSVerions=5.112d
+Compiler=PCH
+CCSVersion=5.112d
+[Target Data]
+FileList=main.c
+[Directories]
+Include=
+[D:\GitHub\wdt_agent\pic_wdt\ccs\main]
+Type=4
+[mru-list]
+1=main.c
+
+[fileformats]
+forcecoff=0
+
+[ProjectLog]
+Days=1
+D1=27-01-2023
+D1_L=32
+D1_L1=[38972]Project Opened.
+D1_L2=[39005]Started Editing.
+D1_L3=[39308]Stopped Editing.
+D1_L4=[39333]Started Editing.
+D1_L5=[40684]Stopped Editing.
+D1_L6=[41049]Started Editing.
+D1_L7=[43343]Stopped Editing.
+D1_L8=[45181]Started Editing.
+D1_L9=[45856]Stopped Editing.
+D1_L10=[45997]Started Editing.
+D1_L11=[47531]Stopped Editing.
+TotalEdit=193
+TotalDebug=0
+D1_E=193
+D1_D=0
+D1_L12=[47772]Started Editing.
+D1_L13=[48084]Stopped Editing.
+D1_L14=[48499]Started Editing.
+D1_L15=[49064]Stopped Editing.
+D1_L16=[49115]Started Editing.
+D1_L17=[49501]Stopped Editing.
+D1_L18=[49795]Started Editing.
+D1_L19=[54046]Stopped Editing.
+D1_L20=[54624]Started Editing.
+D1_L21=[55224]Stopped Editing.
+D1_L22=[55840]Started Editing.
+D1_L23=[56807]Stopped Editing.
+D1_L24=[56903]Started Editing.
+D1_L25=[58041]Stopped Editing.
+D1_L26=[58104]Started Editing.
+D1_L27=[58825]Stopped Editing.
+D1_L28=[59350]Started Editing.
+D1_L29=[59650]Stopped Editing.
+D1_L30=[59931]Started Editing.
+D1_L31=[59938]Stopped Editing.
+D1_L32=[59938]Project Closed.
+
+[Opened Files]
+1=main.c
+t1=25
+Count=2
+2=main.h
+t2=1
+[main.c]
+Type=4
+
+[defines]
+buildcount=53
+[Units]
+Count=1
+1=main (main)

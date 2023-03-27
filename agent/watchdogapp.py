@@ -1,55 +1,64 @@
-import serial
 import tkinter as tk
+import psutil
 
-from tkinter.ttk import Combobox
-from serial.tools import list_ports
+from time import sleep
 
+from agent.utlis import restart_app, run_app
+from agent.frames import (
+    ComChoosingFrame,
+    TargetedAppsFrame,
+)
 
-class ComChoosingFrame(tk.Frame):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        tk.Label(
-            self, text='Serial:'
-        ).pack(anchor=tk.W)
-
-        self.com_ports = Combobox(
-            self, values=self.get_ports(), width=50, state='readonly',
-        )
-        self.com_ports.pack(anchor=tk.W)
-
-        tk.Button(
-            self, text='Сканировать', command=self.update_com_ports,
-        ).pack(anchor=tk.E)
-
-    def update_com_ports(self) -> None:
-        return
-
-    @staticmethod
-    def get_ports() -> list:
-        ports = list_ports.comports()
-
-        return [f'{port}: {desc}' for port, desc, _ in sorted(ports)]
+BACKGROUND = '#D3D3D3'
 
 
 class WatchDogApp:
+    TITLE = 'USB WatchDog Agent v.1.0.0'
+
     def __init__(self):
         self.root = tk.Tk()
+        self.is_running = True
         root = self.root
-        root.title('USB WatchDog Agent v.1.0.0')
-        root.geometry('600x700')
+        root.title(self.TITLE)
         root.resizable(width=False, height=False)
+        root.protocol('WM_DELETE_WINDOW', self.on_exit)
 
-        ComChoosingFrame(
-            root, relief=tk.RAISED, borderwidth=2
-        ).pack(fill=tk.BOTH, expand=True)
+        self.com_choosing_frame = ComChoosingFrame(
+            root, borderwidth=5, background=BACKGROUND, border=1
+        )
 
-        tk.Frame(
-            root, relief=tk.RAISED, borderwidth=1
-        ).pack(fill=tk.BOTH, expand=True)
+        self.targeted_apps_frame = TargetedAppsFrame(
+            root, borderwidth=5, background=BACKGROUND, border=1
+        )
 
-        tk.Frame(
-            root, relief=tk.RAISED, borderwidth=1
-        ).pack(fill=tk.BOTH, expand=True)
+        self.com_choosing_frame.grid(row=0, sticky='WE')
+        self.targeted_apps_frame.grid(row=1, sticky='WE')
 
     def run(self):
+        self.is_running = True
         self.root.mainloop()
+
+    def on_exit(self):
+        self.is_running = False
+        self.root.destroy()
+
+    def check_targets(self):
+        while self.is_running:
+            running_proc_names = {
+                process.name()
+                for process in psutil.process_iter()
+            }
+            target_processes = self.targeted_apps_frame.target_processes
+            for name_process, exe_cmdline in target_processes.items():
+                if name_process not in running_proc_names:
+                    run_app(exe_cmdline[0])
+
+            sleep(3)
+
+    def heartbeating(self):
+        while self.is_running:
+            if self.com_choosing_frame.connected_port is None:
+                continue
+
+            self.com_choosing_frame.connected_port.write(b'h')
+            sleep(2)

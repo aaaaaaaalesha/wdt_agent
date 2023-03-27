@@ -1,0 +1,54 @@
+
+ROM used:   546/65536 (1%)
+            546/65536 (1%) including unused fragments
+
+            0.5 Average locations per line
+            10.9 Average locations per statement
+
+RAM used:   12/3896 (0%) at main() level
+            15/3896 (0%) worst case
+
+Stack used: 0 worst case (0 in main + 0 for interrupts)
+Stack size: 31
+
+Lines Stmts  %   Files
+----- ----- ---  -----
+   83    50 100  main.c
+    9     0   0  main.h
+ 1065     0   0  C:\Program Files (x86)\PICCDEMO\Devices\18F46K22.h
+   28     0   0  C:\Program Files (x86)\PICCDEMO\Drivers\ctype.h
+----- -----
+ 1185    50 Total
+
+Page ROM  %  RAM    Vol Diff  Functions:
+---- --- --- ---    --- ----  ----------
+0     46   4    1    496  8.2  @delay_ms1
+0      8   1    0    170  3.5  @PUTCHARI_BIU_1
+0     98   9    2    236  5.3  timed_getc
+0     78   7    3    260  5.2  try_cast_integer
+0    108  10    1    461  4.6  UART_handler
+0      8   1    0    163  3.9  @const817
+0     36   3    2    152  3.4  @PSTRINGC_1
+0     30   3    1     48  1.1  reset
+0    130  12    1    219  3.6  MAIN
+ Inline         0    315  6.5  @cinit1
+
+Program metrics:
+    Functions               10
+    Statements              50
+    Comments                196
+    Volume (V)              4107
+    Difficulty (D)          45.5
+    Effort to implement (E) 186701
+    Time to implement (T)   2 hours, 53 minutes
+    Est Delivered Bugs (B)  1
+    Cyclomatic Complexity   21
+    Maintainability (MI)    140
+
+ Segment     Used  Free
+-----------  ----  ----
+00000-00002     4  0  
+00004-0FFFE   542  64990  
+
+
+

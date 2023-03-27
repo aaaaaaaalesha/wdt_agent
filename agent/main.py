@@ -1,5 +1,10 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from agent.watchdogapp import WatchDogApp
 
 if __name__ == '__main__':
     app = WatchDogApp()
-    app.run()
+    with ThreadPoolExecutor() as pool:
+        pool.submit(app.heartbeating)
+        pool.submit(app.check_targets)
+        pool.submit(app.run())
